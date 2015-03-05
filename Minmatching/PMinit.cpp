@@ -14,24 +14,20 @@ void PerfectMatching::InitGreedy(bool allocate_trees)
     Node *last_root = &nodes[node_num];
     REAL slack_min;
 
-    for (i=nodes; i<nodes+node_num; i++) i->y = PM_INFTY;
-    for (a=edges; a<edges+edge_num; a++)
-    {
+    for (i = nodes; i < nodes + node_num; i++) i->y = PM_INFTY;
+    for (a = edges; a < edges + edge_num; a++) {
         if (a->head[0]->y > a->slack) a->head[0]->y = a->slack;
         if (a->head[1]->y > a->slack) a->head[1]->y = a->slack;
     }
-    for (a=edges; a<edges+edge_num; a++)
-    {
+    for (a = edges; a < edges + edge_num; a++) {
         i = a->head[0];
-        if (!i->is_outer)
-        {
+        if (!i->is_outer) {
             i->is_outer = 1;
             i->y /= 2;
         }
         a->slack -= i->y;
         i = a->head[1];
-        if (!i->is_outer)
-        {
+        if (!i->is_outer) {
             i->is_outer = 1;
             i->y /= 2;
         }
@@ -39,45 +35,38 @@ void PerfectMatching::InitGreedy(bool allocate_trees)
     }
 
     tree_num = node_num;
-    for (i=nodes; i<nodes+node_num; i++)
-    {
+    for (i = nodes; i < nodes + node_num; i++) {
         if (i->flag == 2) continue;
         slack_min = PM_INFTY;
         FOR_ALL_EDGES(i, a, dir, I) if (slack_min > a->slack) slack_min = a->slack;
         i->y += slack_min;
-        FOR_ALL_EDGES(i, a, dir, I)
-        {
-            if (a->slack <= slack_min && i->flag == 0 && a->head[dir]->flag == 0)
-            {
+        FOR_ALL_EDGES(i, a, dir, I) {
+            if (a->slack <= slack_min && i->flag == 0 && a->head[dir]->flag == 0) {
                 i->flag = 2;
                 a->head[dir]->flag = 2;
                 i->match = EDGE_DIR_TO_ARC(a, dir);
-                a->head[dir]->match = EDGE_DIR_TO_ARC(a, 1-dir);
+                a->head[dir]->match = EDGE_DIR_TO_ARC(a, 1 - dir);
                 tree_num -= 2;
             }
             a->slack -= slack_min;
         }
     }
-    if (allocate_trees)
-    {
-        if (tree_num > tree_num_max)
-        {
+    if (allocate_trees) {
+        if (tree_num > tree_num_max) {
             if (trees) free(trees);
             tree_num_max = tree_num;
-            trees = (Tree *) malloc(tree_num_max*sizeof(Tree));
+            trees = (Tree *) malloc(tree_num_max * sizeof(Tree));
         }
         t = trees;
     }
-    for (i=nodes; i<nodes+node_num; i++)
-    {
+    for (i = nodes; i < nodes + node_num; i++) {
         if (i->flag != 0) continue;
         i->is_tree_root = 1;
         i->first_tree_child = NULL;
         i->tree_sibling_prev = last_root;
         last_root->tree_sibling_next = i;
         last_root = i;
-        if (allocate_trees)
-        {
+        if (allocate_trees) {
             i->tree = t;
             t->root = i;
             t->eps = 0;
@@ -107,21 +96,17 @@ PerfectMatching::Node *PerfectMatching::FindBlossomRootInit(Edge *a0)
     _i[0] = ARC_HEAD(a0);
     _i[1] = ARC_TAIL(a0);
     branch = 0;
-    while (1)
-    {
-        if (!_i[branch]->is_outer)
-        {
+    while (1) {
+        if (!_i[branch]->is_outer) {
             r = _i[branch];
-            j = _i[1-branch];
+            j = _i[1 - branch];
             break;
         }
         _i[branch]->is_outer = 0;
-        if (_i[branch]->is_tree_root)
-        {
+        if (_i[branch]->is_tree_root) {
             j = _i[branch];
-            i = _i[1-branch];
-            while (i->is_outer)
-            {
+            i = _i[1 - branch];
+            while (i->is_outer) {
                 i->is_outer = 0;
                 i = ARC_HEAD(i->match);
                 i->is_outer = 0;
@@ -136,8 +121,7 @@ PerfectMatching::Node *PerfectMatching::FindBlossomRootInit(Edge *a0)
         branch = 1 - branch;
     }
     i = r;
-    while (i != j)
-    {
+    while (i != j) {
         i = ARC_HEAD(i->match);
         i->is_outer = 1;
         i = ARC_HEAD(i->tree_parent);
@@ -158,8 +142,7 @@ void PerfectMatching::ShrinkInit(Edge *a0, Node *tree_root)
     tree_root->flag = 2;
     i = tree_root->first_tree_child;
     if (i)
-        while (1)
-        {
+        while (1) {
             ARC_HEAD(i->match)->flag = 2;
             i->flag = 2;
 
@@ -168,13 +151,11 @@ void PerfectMatching::ShrinkInit(Edge *a0, Node *tree_root)
 
     r = FindBlossomRootInit(a0);
 
-    if (!r->is_tree_root)
-    {
+    if (!r->is_tree_root) {
         j = ARC_HEAD(r->match);
         j->match = aa = j->tree_parent;
         i = ARC_HEAD(aa);
-        while (!i->is_tree_root)
-        {
+        while (!i->is_tree_root) {
             j = ARC_HEAD(i->match);
             i->match = ARC_REV(aa);
             j->match = aa = j->tree_parent;
@@ -189,31 +170,24 @@ void PerfectMatching::ShrinkInit(Edge *a0, Node *tree_root)
     flag = 0;
     a_prev = EDGE_DIR_TO_ARC(a0, 0);
     i = ARC_HEAD(a_prev);
-    while (1)
-    {
+    while (1) {
         Arc *a_next = (flag == 0) ? i->match : i->tree_parent;
         flag = 1 - flag;
         i->flag = 0;
         i->match = NULL;
-        if (branch == 0)
-        {
+        if (branch == 0) {
             i->blossom_sibling = a_next;
-            if (i == r)
-            {
+            if (i == r) {
                 branch = 1;
                 flag = 0;
                 a_prev = ARC_REV(a0);
                 i = ARC_HEAD(a_prev);
                 if (i == r) break;
-            }
-            else
-            {
+            } else {
                 a_prev = i->blossom_sibling;
                 i = ARC_HEAD(a_prev);
             }
-        }
-        else
-        {
+        } else {
             i->blossom_sibling = ARC_REV(a_prev);
             a_prev = a_next;
             i = ARC_HEAD(a_prev);
@@ -228,8 +202,7 @@ void PerfectMatching::ExpandInit(Node *k)
     Node *i = ARC_HEAD(k->blossom_sibling);
     Node *j;
 
-    while (1)
-    {
+    while (1) {
         i->flag = 2; i->is_outer = 1;
         if (i == k) break;
         i->match = i->blossom_sibling;
@@ -250,21 +223,18 @@ void PerfectMatching::AugmentBranchInit(Node *i0, Node *r)
     r->flag = 2;
     i = r->first_tree_child;
     if (i)
-        while (1)
-        {
+        while (1) {
             ARC_HEAD(i->match)->flag = 2;
             i->flag = 2;
 
             MOVE_NODE_IN_TREE(i);
         }
     i = i0;
-    if (!i0->is_tree_root)
-    {
+    if (!i0->is_tree_root) {
         j = ARC_HEAD(i0->match);
         j->match = aa = j->tree_parent;
         i = ARC_HEAD(aa);
-        while (!i->is_tree_root)
-        {
+        while (!i->is_tree_root) {
             j = ARC_HEAD(i->match);
             i->match = ARC_REV(aa);
             j->match = aa = j->tree_parent;
@@ -302,12 +272,11 @@ void PerfectMatching::InitGlobal()
 
     InitGreedy();
 
-    for (i=nodes; i<nodes+node_num; i++) i->best_edge = NULL;
+    for (i = nodes; i < nodes + node_num; i++) i->best_edge = NULL;
 
     PriorityQueue<REAL> pq;
 
-    for (r=nodes[node_num].tree_sibling_next; r;)
-    {
+    for (r = nodes[node_num].tree_sibling_next; r;) {
         r2 = r->tree_sibling_next;
         if (r2) r3 = r2->tree_sibling_next;
         i = r;
@@ -322,75 +291,57 @@ void PerfectMatching::InitGlobal()
         flag = NONE;
         Node *branch_root = i;
 
-        while (1)
-        {
+        while (1) {
             i->is_processed = 1;
             i->y -= eps;
             if (!i->is_tree_root) ARC_HEAD(i->match)->y += eps;
 
-            FOR_ALL_EDGES(i, a, dir, I)
-            {
+            FOR_ALL_EDGES(i, a, dir, I) {
                 a->slack += eps;
                 j = a->head[dir];
 
-                if (j->tree == &TREE)
-                {
+                if (j->tree == &TREE) {
                     // same tree
-                    if (j->flag == 0)
-                    {
+                    if (j->flag == 0) {
                         REAL slack = a->slack;
                         if (!j->is_processed) slack += eps;
-                        if (2*critical_eps > slack || critical_arc == NULL)
-                        {
+                        if (2 * critical_eps > slack || critical_arc == NULL) {
                             flag = SHRINK;
-                            critical_eps = slack/2;
+                            critical_eps = slack / 2;
                             critical_arc = EDGE_DIR_TO_ARC(a, dir);
                             if (critical_eps <= eps) break;
                             //pq.DecreaseUpperBound(critical_eps);
                         }
                     }
-                }
-                else if (j->flag == 0)
-                {
+                } else if (j->flag == 0) {
                     // different tree
-                    if (critical_eps >= a->slack || critical_arc == NULL)
-                    {
+                    if (critical_eps >= a->slack || critical_arc == NULL) {
                         flag = AUGMENT;
                         critical_eps = a->slack;
                         critical_arc = EDGE_DIR_TO_ARC(a, dir);
                         if (critical_eps <= eps) break;
                         //pq.DecreaseUpperBound(critical_eps);
                     }
-                }
-                else
-                {
+                } else {
                     // free node
-                    if (a->slack > eps)
-                    {
-                        if (a->slack < critical_eps)
-                        {
-                            if (j->best_edge == NULL)
-                            {
+                    if (a->slack > eps) {
+                        if (a->slack < critical_eps) {
+                            if (j->best_edge == NULL) {
                                 j->best_edge = a;
                                 pq.Add(a);
-                            }
-                            else
-                            {
-                                if (a->slack < j->best_edge->slack)
-                                {
+                            } else {
+                                if (a->slack < j->best_edge->slack) {
                                     pq.Decrease(j->best_edge, a, pq_buf);
                                     j->best_edge = a;
                                 }
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         assert(j->flag == 2 && !j->is_blossom && !ARC_HEAD(j->match)->is_blossom);
                         if (j->best_edge) pq.Remove(j->best_edge, pq_buf);
                         j->flag = 1;
                         j->tree = i->tree;
-                        j->tree_parent = EDGE_DIR_TO_ARC(a, 1-dir);
+                        j->tree_parent = EDGE_DIR_TO_ARC(a, 1 - dir);
                         j = ARC_HEAD(j->match);
                         if (j->best_edge) pq.Remove(j->best_edge, pq_buf);
                         ADD_TREE_CHILD(i, j);
@@ -398,8 +349,7 @@ void PerfectMatching::InitGlobal()
                 }
             }
 
-            if (dir < 2 && a)
-            {
+            if (dir < 2 && a) {
                 Edge *atmp = a;
                 int dirtmp = dir;
                 CONTINUE_FOR_ALL_EDGES(i, atmp, dirtmp, I) atmp->slack += eps;
@@ -408,18 +358,14 @@ void PerfectMatching::InitGlobal()
 
             // move i
             if (i->first_tree_child) i = i->first_tree_child;
-            else
-            {
-                while (i != branch_root && !i->tree_sibling_next)
-                {
+            else {
+                while (i != branch_root && !i->tree_sibling_next) {
                     i = ARC_HEAD(i->match);
                     i = ARC_HEAD(i->tree_parent);
                 }
-                if (i == branch_root)
-                {
+                if (i == branch_root) {
                     PriorityQueue<REAL>::Item *q = pq.GetMin();
-                    if (q == NULL || q->slack >= critical_eps)
-                    {
+                    if (q == NULL || q->slack >= critical_eps) {
                         eps = critical_eps;
                         break;
                     }
@@ -451,23 +397,18 @@ void PerfectMatching::InitGlobal()
 
         // update slacks
         i = r;
-        while (1)
-        {
-            if (i->is_processed)
-            {
+        while (1) {
+            if (i->is_processed) {
                 i->y += eps;
-                if (!i->is_tree_root)
-                {
+                if (!i->is_tree_root) {
                     j = ARC_HEAD(i->match);
                     j->y -= eps;
                     REAL delta = eps - ARC_TO_EDGE_PTR(i->match)->slack;
                     FOR_ALL_EDGES(j, a, dir, I) a->slack += delta;
                     j->best_edge = NULL;
                 }
-                FOR_ALL_EDGES(i, a, dir, I)
-                {
-                    if (!PriorityQueue<REAL>::isReset(a))
-                    {
+                FOR_ALL_EDGES(i, a, dir, I) {
+                    if (!PriorityQueue<REAL>::isReset(a)) {
                         assert(a->head[dir]->flag == 2 && a->head[dir]->best_edge == a);
                         a->head[dir]->best_edge = NULL;
                         PriorityQueue<REAL>::ResetItem(a);
@@ -476,9 +417,7 @@ void PerfectMatching::InitGlobal()
                 }
 
                 i->is_processed = 0;
-            }
-            else
-            {
+            } else {
                 if (!i->is_tree_root) ARC_HEAD(i->match)->best_edge = NULL;
             }
             i->best_edge = NULL;
@@ -488,21 +427,15 @@ void PerfectMatching::InitGlobal()
 
         i = ARC_TAIL(critical_arc);
         j = ARC_HEAD(critical_arc);
-        if (flag == SHRINK)
-        {
+        if (flag == SHRINK) {
             // shrink
             ShrinkInit(ARC_TO_EDGE_PTR(critical_arc), r);
-        }
-        else
-        {
+        } else {
             // augment
             AugmentBranchInit(i, r);
             if (j->is_outer)
-            {
                 AugmentBranchInit(j, j);
-            }
-            else
-            {
+            else {
                 ExpandInit(j);
                 tree_num --;
             }
@@ -514,30 +447,24 @@ void PerfectMatching::InitGlobal()
         if (r && !r->is_tree_root) r = r3;
     }
 
-    if (tree_num > tree_num_max)
-    {
+    if (tree_num > tree_num_max) {
         if (trees) free(trees);
         tree_num_max = tree_num;
-        trees = (Tree *) malloc(tree_num_max*sizeof(Tree));
+        trees = (Tree *) malloc(tree_num_max * sizeof(Tree));
     }
     Tree *t = trees;
-    for (r=nodes; r<nodes+node_num; r++)
-    {
-        if (!r->is_outer)
-        {
+    for (r = nodes; r < nodes + node_num; r++) {
+        if (!r->is_outer) {
             ExpandInit(r);
             r->is_tree_root = 1;
             r->flag = 0;
             r->first_tree_child = NULL;
-            if (t == trees)
-            {
+            if (t == trees) {
                 nodes[node_num].tree_sibling_next = r;
                 r->tree_sibling_prev = &nodes[node_num];
-            }
-            else
-            {
-                (t-1)->root->tree_sibling_next = r;
-                r->tree_sibling_prev = (t-1)->root;
+            } else {
+                (t - 1)->root->tree_sibling_next = r;
+                r->tree_sibling_prev = (t - 1)->root;
             }
             r->tree = t;
             t->root = r;
@@ -550,7 +477,7 @@ void PerfectMatching::InitGlobal()
             t ++;
         }
     }
-    assert(t == trees+tree_num);
+    assert(t == trees + tree_num);
     if (t == trees) nodes[node_num].tree_sibling_next = NULL;
-    else (t-1)->root->tree_sibling_next = NULL;
+    else (t - 1)->root->tree_sibling_next = NULL;
 }

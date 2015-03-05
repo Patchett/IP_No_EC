@@ -1,6 +1,6 @@
 #include "MST.h"
 
-MST::MST(int **input, int size)
+MST::MST(float **input, int size)
 {
     adjacentMatrix = input;
     key = new int[size];
@@ -27,8 +27,7 @@ void MST::makeTree()
     parent[0] = -1; // First node is always root of MST
 
     // The MST will have V vertices
-    for (int count = 0; count < N - 1; count++)
-    {
+    for (int count = 0; count < N - 1; count++) {
         // Pick thd minimum key vertex from the set of vertices
         // not yet included in MST
         int u = minKey(key, mstSet);
@@ -46,19 +45,16 @@ void MST::makeTree()
                 parent[v]  = u, key[v] = adjacentMatrix[u][v];
     }
 
-    MSTMatrix = (int **)calloc(N, sizeof(int *));
+    MSTMatrix = (float **)calloc(N, sizeof(int *));
 
     for (unsigned int i = 0; i < N; ++i)
-        MSTMatrix[i] = (int *)calloc(N, sizeof(int));
+        MSTMatrix[i] = (float *)calloc(N, sizeof(int));
 
-    for (int i = 0; i < N; i++)
-    {
-        if (parent[i])
-        {
+    for (int i = 0; i < N; i++) {
+        if (parent[i]) {
             MSTMatrix[parent[i]][i];
             MSTMatrix[i][parent[i]] = key[i];
-        }
-        else
+        } else
             MSTMatrix[i][parent[i]] = 0;
     }
 }
@@ -92,16 +88,11 @@ float MST::calMean(int option)
 {
     float mean = 0.0;
 
-    if (option == MST_1)
-    {
+    if (option == MST_1) {
         //calculate
-    }
-    else if (option == TSP2)
-    {
+    } else if (option == TSP2) {
 
-    }
-    else if (option == TSP1_5)
-    {
+    } else if (option == TSP1_5) {
 
     }
 
@@ -113,16 +104,11 @@ float MST::calStd(int option)
 {
     float std = 0.0;
 
-    if (option == MST_1)
-    {
+    if (option == MST_1) {
         //calculate
-    }
-    else if (option == TSP2)
-    {
+    } else if (option == TSP2) {
 
-    }
-    else if (option == TSP1_5)
-    {
+    } else if (option == TSP1_5) {
 
     }
 

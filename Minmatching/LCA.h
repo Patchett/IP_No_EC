@@ -8,8 +8,8 @@ It takes O(n \log n) space (and O(n \log n) time for construction). The memory r
 reduced to O(n) by defining LCA_BLOCKS. The implementation then follows the approach described in
 
 J. Fischer, V. Heun: Theoretical and Practical Improvements on the RMQ-Problem, with Applications to LCA and LCE.
-	Proceedings of the 17th Annual Symposium on Combinatorial Pattern Matching
-	(CPM'06), Lecture Notes in Computer Science 4009, 36-48, Springer-Verlag, 2006.
+    Proceedings of the 17th Annual Symposium on Combinatorial Pattern Matching
+    (CPM'06), Lecture Notes in Computer Science 4009, 36-48, Springer-Verlag, 2006.
 
 (although in-block queries are computed naively in O(K) worst-case time, where K is the size of the block,
 rather than as described by Fischer and Heun).
@@ -24,17 +24,17 @@ Written by Vladimir Kolmogorov, vnk@adastral.ucl.ac.uk.
 //  0   1
 // (Note: the ordering of nodes is in the tree preorder!!!)
 
-	LCATree* lca = new LCATree(5);
-	char A0, A1, A2, A3, A4;
+    LCATree* lca = new LCATree(5);
+    char A0, A1, A2, A3, A4;
 
-	lca->Add(&A0, &A2);
-	lca->Add(&A1, &A2);
-	lca->Add(&A2, &A4);
-	lca->Add(&A3, &A4);
-	lca->AddRoot(&A4);
+    lca->Add(&A0, &A2);
+    lca->Add(&A1, &A2);
+    lca->Add(&A2, &A4);
+    lca->Add(&A3, &A4);
+    lca->AddRoot(&A4);
 
-	int result = lca->GetLCA(1, 3); // should be 4
-	delete lca;
+    int result = lca->GetLCA(1, 3); // should be 4
+    delete lca;
 
 
 */
@@ -49,8 +49,7 @@ Written by Vladimir Kolmogorov, vnk@adastral.ucl.ac.uk.
 
 //#define LCA_BLOCKS
 
-class LCATree
-{
+class LCATree {
 public:
     typedef void *NodeId; // can be any type, e.g. int. (The code checks NodeId's only for equalities.)
     typedef int PreorderId;
@@ -92,8 +91,7 @@ inline LCATree::LCATree(int _n_max) : n_max(_n_max), array(NULL)
 #ifdef LCA_BLOCKS
     K = -2;
     n = n_max;
-    while (n > 0)
-    {
+    while (n > 0) {
         K ++;
         n /= 2;
     }
@@ -115,9 +113,8 @@ inline LCATree::~LCATree()
     delete [] parents;
     if (buf0) delete [] buf0;
     if (buf1) delete [] buf1;
-    if (array)
-    {
-        for (k=1; k<=k_max; k++) delete [] array[k];
+    if (array) {
+        for (k = 1; k <= k_max; k++) delete [] array[k];
         delete [] array;
     }
 }
@@ -126,19 +123,14 @@ inline LCATree::PreorderId LCATree::Add(NodeId i, NodeId i_parent)
 {
     assert(n < n_max);
 
-    if (n == 0)
-    {
+    if (n == 0) {
         *parent_current = i;
         *(++ parent_current) = i_parent;
         parents[0] = -1;
-    }
-    else
-    {
-        if (i == *parent_current)
-        {
+    } else {
+        if (i == *parent_current) {
             int c = *child_current --;
-            while (1)
-            {
+            while (1) {
                 int c_next = parents[c];
                 parents[c] = n;
                 if (c_next < 0) break;
@@ -147,8 +139,7 @@ inline LCATree::PreorderId LCATree::Add(NodeId i, NodeId i_parent)
             parent_current --;
         }
         if (i_parent == *parent_current) parents[n] = *child_current;
-        else
-        {
+        else {
             *(++ parent_current) = i_parent;
             parents[n] = -1;
             child_current ++;
@@ -163,16 +154,13 @@ inline LCATree::PreorderId LCATree::AddRoot(NodeId i)
 {
     assert(n < n_max);
 
-    if (n > 0)
-    {
-        if (i != *parent_current || parent_current != buf0+1)
-        {
+    if (n > 0) {
+        if (i != *parent_current || parent_current != buf0 + 1) {
             printf("Error in LCATree construction: wrong sequence of calls!\n");
             exit(1);
         }
         int c = *child_current --;
-        while (1)
-        {
+        while (1) {
             int c_next = parents[c];
             parents[c] = n;
             if (c_next < 0) break;
@@ -188,39 +176,33 @@ inline LCATree::PreorderId LCATree::AddRoot(NodeId i)
     buf1 = NULL;
 
     // initialize array
-    int b, k = 1, block_num = (n-1)/K+1;
-    if (block_num < 3) return n-1;
-    int d = (block_num-1)/4;
-    while (d)
-    {
+    int b, k = 1, block_num = (n - 1) / K + 1;
+    if (block_num < 3) return n - 1;
+    int d = (block_num - 1) / 4;
+    while (d) {
         k ++;
         d >>= 1;
     }
     k_max = k;
 
-    array = new int *[k_max+1];
+    array = new int *[k_max + 1];
     array[0] = parents;
-    for (k=1, d=2; k<=k_max; k++, d*=2)
-    {
-        array[k] = new int[block_num-d];
-        if (k == 1)
-        {
-            for (b=0; b<block_num-d; b++) array[1][b] = GetLCADirect((b+1)*K-1, (b+d)*K);
-        }
-        else
-        {
-            for (b=0; b<block_num-d; b++)
-            {
-                int i = array[k-1][b];
-                int j = array[k-1][b+d/2];
+    for (k = 1, d = 2; k <= k_max; k++, d *= 2) {
+        array[k] = new int[block_num - d];
+        if (k == 1) {
+            for (b = 0; b < block_num - d; b++) array[1][b] = GetLCADirect((b + 1) * K - 1, (b + d) * K);
+        } else {
+            for (b = 0; b < block_num - d; b++) {
+                int i = array[k - 1][b];
+                int j = array[k - 1][b + d / 2];
                 if (i < j) i = j;
-                j = array[1][b+d/2-1];
+                j = array[1][b + d / 2 - 1];
                 array[k][b] = (i > j) ? i : j;
             }
         }
     }
 
-    return n-1;
+    return n - 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -238,25 +220,23 @@ inline int LCATree::_GetLCA(int i, int j)
 {
 #ifdef LCA_BLOCKS
 
-    int bi = i/K, bj = j/K;
+    int bi = i / K, bj = j / K;
     if (bi == bj) return GetLCADirect(i, j);
-    int i_last = (bi+1)*K-1, j_first = bj*K;
+    int i_last = (bi + 1) * K - 1, j_first = bj * K;
     i = GetLCADirect(i, i_last);
     j = GetLCADirect(j_first, j);
     if (i < j) i = j;
     // set j = LCA(i_last, j_first)
     if (j_first - i_last == 1) j = parents[i_last];
-    else
-    {
-        int k = 1, d = (bj-bi)/4;
-        while (d)
-        {
+    else {
+        int k = 1, d = (bj - bi) / 4;
+        while (d) {
             k ++;
             d >>= 1;
         }
-        int diff = 1<<k;
+        int diff = 1 << k;
         //assert(bi+diff <= bj && bi+diff>bj-diff);
-        j = (array[k][bi] > array[k][bj-diff]) ? array[k][bi] : array[k][bj-diff];
+        j = (array[k][bi] > array[k][bj - diff]) ? array[k][bi] : array[k][bj - diff];
     }
     return (i > j) ? i : j;
 
@@ -264,15 +244,14 @@ inline int LCATree::_GetLCA(int i, int j)
 
     if (j == i) return i;
 
-    int k = 0, d = (j-i)/2;
-    while (d)
-    {
+    int k = 0, d = (j - i) / 2;
+    while (d) {
         k ++;
         d >>= 1;
     }
-    int diff = 1<<k;
+    int diff = 1 << k;
     //assert(i+diff <= j && i+diff>j-diff);
-    return (array[k][i] > array[k][j-diff]) ? array[k][i] : array[k][j-diff];
+    return (array[k][i] > array[k][j - diff]) ? array[k][i] : array[k][j - diff];
 
 #endif
 }
@@ -283,8 +262,7 @@ inline int LCATree::_GetLCA(int i, int j)
 
 inline LCATree::PreorderId LCATree::GetLCA(PreorderId i, PreorderId j)
 {
-    if (i > j)
-    {
+    if (i > j) {
         PreorderId k = i;
         i = j;
         j = k;
@@ -295,39 +273,31 @@ inline LCATree::PreorderId LCATree::GetLCA(PreorderId i, PreorderId j)
 inline void LCATree::GetPenultimateNodes(PreorderId &_i, PreorderId &_j)
 {
     int i, j, d, swap;
-    if (_i < _j)
-    {
+    if (_i < _j) {
         i = _i;
         j = _j;
         swap = 0;
-    }
-    else
-    {
+    } else {
         i = _j;
         j = _i;
         swap = 1;
     }
     int r = _GetLCA(i, j);
-    assert(i!=r && j!=r);
-    while (parents[i] != r)
-    {
+    assert(i != r && j != r);
+    while (parents[i] != r) {
         int i0 = parents[i];
-        d = (j - i0)/2;
-        while ((i=_GetLCA(i0, i0+d)) == r) d /= 2;
+        d = (j - i0) / 2;
+        while ((i = _GetLCA(i0, i0 + d)) == r) d /= 2;
     }
-    while (parents[j] != r)
-    {
+    while (parents[j] != r) {
         int j0 = parents[j];
-        d = (r - j0)/2;
-        while ((j=_GetLCA(j0, j0+d)) == r) d /= 2;
+        d = (r - j0) / 2;
+        while ((j = _GetLCA(j0, j0 + d)) == r) d /= 2;
     }
-    if (swap == 0)
-    {
+    if (swap == 0) {
         _i = i;
         _j = j;
-    }
-    else
-    {
+    } else {
         _j = i;
         _i = j;
     }
