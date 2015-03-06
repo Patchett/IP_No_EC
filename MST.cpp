@@ -6,6 +6,14 @@ MST::MST(float **input, int size)
     key = new int[size];
     mstSet = new bool[size];
     parent = new int[size];
+    MSTSize = 0;
+
+    TSP1p5_Total = 0;
+    shortcutVertex = -1;
+
+    visited.resize(size);
+//     for (int i = 0; i < N; i++)
+//         visited[i] = false;
 
     N = size;
 }
@@ -28,7 +36,7 @@ void MST::makeTree()
 
     // The MST will have V vertices
     for (int count = 0; count < N - 1; count++) {
-        // Pick thd minimum key vertex from the set of vertices
+        // Pick the minimum key vertex from the set of vertices
         // not yet included in MST
         int u = minKey(key, mstSet);
 
@@ -39,24 +47,25 @@ void MST::makeTree()
         // the picked vertex. Consider only those vertices which are not yet
         // included in MST
         for (int v = 0; v < N; v++)
+            // u is the parent.
+            // v is a node in u's adj list. edge u -> v is the edge we update
             // mstSet[v] is false for vertices not yet included in MST
             // Update the key only if adjacentMatrix[u][v] is smaller than key[v]
             if (adjacentMatrix[u][v] && mstSet[v] == false && adjacentMatrix[u][v] <  key[v])
                 parent[v]  = u, key[v] = adjacentMatrix[u][v];
     }
 
-    MSTMatrix = (float **)calloc(N, sizeof(int *));
+    MSTMatrix = (bool **)calloc(N, sizeof(int *));
 
-    for (unsigned int i = 0; i < N; ++i)
-        MSTMatrix[i] = (float *)calloc(N, sizeof(int));
+    for (int i = 0; i < N; ++i)
+        MSTMatrix[i] = (bool *)calloc(N, sizeof(int));
 
-    for (int i = 0; i < N; i++) {
-        if (parent[i]) {
-            MSTMatrix[parent[i]][i];
-            MSTMatrix[i][parent[i]] = key[i];
-        } else
-            MSTMatrix[i][parent[i]] = 0;
+    for (int i = 1; i < N; i++) {
+        MSTMatrix[parent[i]][i] = true;
+        MSTSize += adjacentMatrix[parent[i]][i];
     }
+
+    cout << "MST Size: " << MSTSize << endl;
 }
 
 // A utility function to find the vertex with minimum key value, from
@@ -81,6 +90,19 @@ void MST::printMST()
     cout << "Edge   Weight" << endl;
     for (int i = 1; i < N; i++)
         cout << parent[i] << " - " << i << "  " << adjacentMatrix[i][parent[i]] << endl;
+}
+
+void MST::printMSTMatrix()
+{
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            if (MSTMatrix[i][j])
+                cout << MSTMatrix[i][j] << "," << adjacentMatrix[i][j] << " ";
+            else
+                cout << MSTMatrix[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 
 //calculate mean of all edges in the MST
@@ -115,13 +137,36 @@ float MST::calStd(int option)
     return std;
 }
 
+//make a Eulerian tour by DFS
+//add shortcuts if a vertex has no detours.
+//calculate heuristic TSP cost
+
+// pass in current_index, shortcut_flag, coordinates_of_vertex_to_shortcut
+void MST::makeTSPHelper(int currentVertex, int parentVertex)
+{
+    bool shortcutFlag = true;
+    visited[currentVertex] = true;
+    if (shortcutVertex == -1)
+        TSP1p5_Total += adjacentMatrix[parentVertex][currentVertex];
+    else {
+        TSP1p5_Total += adjacentMatrix[shortcutVertex][currentVertex];
+        shortcutVertex = -1;
+    }
+
+    for (int i = 0; i < N; i++) {
+        if (MSTMatrix[currentVertex][i] && !visited[i]) {
+            shortcutFlag = false;
+            makeTSPHelper(i, currentVertex);
+        }
+    }
+
+    if (shortcutFlag)
+        shortcutVertex = currentVertex;
+}
+
 void MST::makeTSP2()
 {
-    //make a Eulerian tour by DFS
-
-    //add shortcuts if a vertex has no detours.
-
-    //calculate heuristic TSP cost
+    makeTSPHelper(0, 0);
 }
 
 void MST::makeTSP1_5()
@@ -130,7 +175,7 @@ void MST::makeTSP1_5()
     //construct minimum-weight-matching for the given MST
     minimumMatching();
 
-    //make all edges has even degree by combining mimimum-weight matching and MST
+    //make all edges has even degree by combining minimum-weight matching and MST
     combine();
 
     //calculate heuristic TSP cost

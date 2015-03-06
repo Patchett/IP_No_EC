@@ -111,21 +111,21 @@ public:
             verbose(true)
         {}
 
-        bool	fractional_jumpstart; // false: greedy, true: compute fractional matching
+        bool    fractional_jumpstart; // false: greedy, true: compute fractional matching
 
-        int 	dual_greedy_update_option; // 0: compute connected components (as in Blossom IV)
+        int     dual_greedy_update_option; // 0: compute connected components (as in Blossom IV)
         // 1: compute strongly connected components (discussed by Cook-Rohe, but not implemented)
         // 2: single eps for all trees (fixed eps approach)
 
-        double	dual_LP_threshold; // if tree_num => dual_updates_threshold*node_num: greedy updates
+        double  dual_LP_threshold; // if tree_num => dual_updates_threshold*node_num: greedy updates
         // if tree_num <  dual_updates_threshold*node_num: global updates (solve LP)
 
-        bool	update_duals_before; // before tree growth
-        bool	update_duals_after;  // after tree growth
+        bool    update_duals_before; // before tree growth
+        bool    update_duals_after;  // after tree growth
 
-        double	single_tree_threshold; // if (tree_num => single_tree_threshold*node_num && update_duals_after): try to grow a single tree as long as possible
+        double  single_tree_threshold; // if (tree_num => single_tree_threshold*node_num && update_duals_after): try to grow a single tree as long as possible
 
-        bool	verbose;
+        bool    verbose;
     } options;
 
 
@@ -150,39 +150,39 @@ private:
     struct TreeEdgeIterator;
     struct LCATreeX;
 
-    Node	*nodes;
-    Edge	*edges;
-    char	*edges_orig;
+    Node    *nodes;
+    Edge    *edges;
+    char    *edges_orig;
     DBlock<Node> *blossoms;
-    Tree	*trees;
+    Tree    *trees;
     DBlock<TreeEdge> *tree_edges;
     struct ExpandTmpItem {
-        Node	*i;
-        Node	*blossom_parent;
-        Node	*blossom_grandparent;
+        Node    *i;
+        Node    *blossom_parent;
+        Node    *blossom_grandparent;
     };
     Block<ExpandTmpItem> *expand_tmp_list; // used inside Expand()
 
-    int		node_num;
-    int		edge_num, edge_num_max;
-    int		tree_num, tree_num_max;
+    int     node_num;
+    int     edge_num, edge_num_max;
+    int     tree_num, tree_num_max;
 
-    Node	*removed_first;
-    int		blossom_num;
-    int		removed_num;
+    Node    *removed_first;
+    int     blossom_num;
+    int     removed_num;
 
-    void	*pq_buf;
+    void    *pq_buf;
 
-    bool	first_solve;
+    bool    first_solve;
 
     // stat
     struct Stat {
-        int		shrink_count;
-        int		expand_count;
-        int		grow_count;
-        double	shrink_time;
-        double	expand_time;
-        double	dual_time;
+        int     shrink_count;
+        int     expand_count;
+        int     grow_count;
+        double  shrink_time;
+        double  expand_time;
+        double  dual_time;
     } stat;
 
     ////////////////////////////////////////////////////////////////////

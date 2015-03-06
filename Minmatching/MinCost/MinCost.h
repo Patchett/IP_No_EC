@@ -75,47 +75,47 @@ protected:
     struct Arc;
 
     struct Node {
-        Arc			*firstNonsaturated;
-        Arc			*firstSaturated;
+        Arc         *firstNonsaturated;
+        Arc         *firstSaturated;
 
-        Arc			*parent;
-        Node		*next; // list of nodes with positive excesses
+        Arc         *parent;
+        Node        *next; // list of nodes with positive excesses
 
-        FlowType	excess;
-        CostType	pi;
-        int			flag;
+        FlowType    excess;
+        CostType    pi;
+        int         flag;
         union {
-            int		heap_ptr;
-            Node	*next_permanent;
+            int     heap_ptr;
+            Node    *next_permanent;
         };
 #ifdef MINCOST_DEBUG
-        int			id;
+        int         id;
 #endif
     };
 
     struct Arc {
-        Node		*head;
-        Arc			*prev;
-        Arc			*next;
-        Arc			*sister;	// reverse arc
+        Node        *head;
+        Arc         *prev;
+        Arc         *next;
+        Arc         *sister;    // reverse arc
 
-        FlowType	r_cap;		// residual capacity
+        FlowType    r_cap;      // residual capacity
 #ifdef MINCOST_DEBUG
-        FlowType	cap_orig;
+        FlowType    cap_orig;
 #endif
-        CostType	cost;
+        CostType    cost;
         CostType GetRCost() { return cost + head->pi - sister->head->pi; }
     };
 
-    int		nodeNum, edgeNum, edgeNumMax;
-    Node	*nodes;
-    Arc		*arcs;
-    Node	*firstActive;
-    int		counter;
+    int     nodeNum, edgeNum, edgeNumMax;
+    Node    *nodes;
+    Arc     *arcs;
+    Node    *firstActive;
+    int     counter;
     CostType cost;
 
 
-    void	(*error_function)(const char *);	// this function is called if a error occurs,
+    void (*error_function)(const char *);       // this function is called if a error occurs,
     // with a corresponding error message
     // (or exit(1) is called if it's NULL)
 
@@ -132,8 +132,8 @@ protected:
 
     private:
         struct Item {
-            Node		*i;
-            CostType	key;
+            Node        *i;
+            CostType    key;
         } *array;
         int N, arraySize;
         void Swap(int k1, int k2);
@@ -174,7 +174,7 @@ public:
     CostType GetSolution(NodeId i);
 
 private:
-    NodeId	source;
+    NodeId  source;
 };
 
 

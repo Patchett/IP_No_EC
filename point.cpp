@@ -13,6 +13,8 @@ Point::~Point()
 void Point::generatePoint(unsigned int H, unsigned int W, unsigned int N)
 {
     int row = 0, col = 0;
+    int xp = 0;
+    int yp = 0;
 
     if (N > MAX_N || W > MAX_N || H > MAX_N) {
         cout << "W,H,N should be less than " << MAX_N << endl;
@@ -26,7 +28,17 @@ void Point::generatePoint(unsigned int H, unsigned int W, unsigned int N)
 
     pointNum = N;
 
-    //uniform distrubution generation
+    // Open file and write points/parameters for LKH
+    ofstream Problem_File("Problem_File");
+    Problem_File << "NAME : Problem_File" << endl;
+    Problem_File << "COMMENT : Initial randomly generated pointset" << endl;
+    Problem_File << "TYPE : TSP" << endl;
+    Problem_File << "DIMENSION : " << N << endl;
+    Problem_File << "EDGE_WEIGHT_TYPE : EUC_2D" << endl;
+    Problem_File << "NODE_COORD_SECTION" << endl;
+
+
+    //uniform distribution generation
     std::default_random_engine x_generator;
     std::default_random_engine y_generator;
 
@@ -36,14 +48,20 @@ void Point::generatePoint(unsigned int H, unsigned int W, unsigned int N)
     std::uniform_int_distribution<int> x_distribution(0, H);
     std::uniform_int_distribution<int> y_distribution(0, W);
 
-    while (pointset.size() <= N - 1) {
-        pair<int, int> point(x_distribution(generator), y_distribution(generator));
+    int count = 1;
+    for (int i = 0; i < N; i++) {
+        xp = x_distribution(generator);
+        yp = y_distribution(generator);
+        // Print points to file for LKH
+        Problem_File << count << " " << xp << " " << yp << endl;
+        pair<int, int> point(xp, yp);
         pointset.insert(point);
+        count++;
     }
 
     adjacentMatrix = (float **)calloc(N, sizeof(int *));
 
-    for (int i = 0; i < N ; ++i)
+    for (unsigned int i = 0; i < N ; ++i)
         adjacentMatrix[i] = (float *)calloc(N, sizeof(int));
 
     for (set<pair<int, int>>::iterator it = pointset.begin() ; it != pointset.end() ; ++it, ++row) {
