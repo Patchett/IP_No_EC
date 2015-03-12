@@ -3,7 +3,7 @@
 
 // At most one of the flags
 //    PM_TIMER_MSVC
-//    PM_TIMER_CLOCK_GETTIME
+//    PM_TIMER_CLOCK_
 //    PM_TIMER_GETRUSAGE
 //    PM_TIMER_EXTERNAL
 //    PM_TIMER_NONE
@@ -12,14 +12,14 @@
 
 #if defined (PM_TIMER_MSVC) || defined (PM_TIMER_CLOCK_GETTIME) || defined (PM_TIMER_GETRUSAGE) || defined (PM_TIMER_EXTERNAL) || defined (PM_TIMER_NONE)
 #else
-    // default option
-    #ifdef _MSC_VER
-        #define PM_TIMER_MSVC
-    #elif defined(__APPLE_CC__)
-        #define PM_TIMER_GETRUSAGE
-    #else
-        #define PM_TIMER_CLOCK_GETTIME
-    #endif
+// default option
+#ifdef _MSC_VER
+#define PM_TIMER_MSVC
+#elif defined(__APPLE_CC__)
+#define PM_TIMER_GETRUSAGE
+#else
+#define PM_TIMER_CLOCK_GETTIME
+#endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ inline double get_time()
 
 #ifdef PM_TIMER_EXTERNAL
 
-    extern double get_time();
+extern double get_time();
 
 #endif
 

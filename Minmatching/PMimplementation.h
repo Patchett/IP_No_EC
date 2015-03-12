@@ -23,8 +23,8 @@
 #define ASKHAKJSNTJAKSNBBAVASRA
 
 #ifdef _MSC_VER
-    #pragma warning(disable: 4311)
-    #pragma warning(disable: 4312)
+#pragma warning(disable: 4311)
+#pragma warning(disable: 4312)
 #endif
 
 #include "PerfectMatching.h"

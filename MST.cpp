@@ -2,8 +2,6 @@
 extern bool debug;
 extern bool verbose;
 
-#pragma once
-
 MST::MST(float **input, int size, int runs)
 {
     adjacentMatrix = input;
