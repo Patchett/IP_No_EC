@@ -1,30 +1,47 @@
 #include "MST.h"
+extern bool debug;
+extern bool verbose;
 
-MST::MST(float **input, int size)
+#pragma once
+
+MST::MST(float **input, int size, int runs)
 {
     adjacentMatrix = input;
+    num_of_runs = runs;
     key = new int[size];
     mstSet = new bool[size];
     parent = new int[size];
     MSTSize = 0;
 
-    TSP1p5_Total = 0;
+    MSTMatrix = (int **)calloc(size, sizeof(int *));
+    for (int i = 0; i < size; i++)
+        MSTMatrix[i] = (int *)calloc(size, sizeof(int));
+
+    TSP1p5_size = 0;
+    TSP2_size = 0;
     shortcutVertex = -1;
+    shortcut_vertex_euler = -1;
 
     visited.resize(size);
-//     for (int i = 0; i < N; i++)
-//         visited[i] = false;
+    visited_euler_tour.resize(size);
+    fill(visited_euler_tour.begin(), visited_euler_tour.end(), false);
+    fill(visited.begin(), visited.end(), false);
 
     N = size;
 }
 
 MST::~MST()
 {
-
+    delete []parent;
+    delete []key;
+    delete []mstSet;
+    for (int i = 0; i < N; i++)
+        free(MSTMatrix[i]);
+    free(MSTMatrix);
 }
 
 //use Prim's algorithm or Kruskal algorithm. Copied from 'http://www.geeksforgeeks.org/greedy-algorithms-set-5-prims-minimum-spanning-tree-mst-2/'
-void MST::makeTree()
+int MST::makeTree()
 {
     // Initialize all keys as INFINITE
     for (int i = 0; i < N; i++)
@@ -55,17 +72,13 @@ void MST::makeTree()
                 parent[v]  = u, key[v] = adjacentMatrix[u][v];
     }
 
-    MSTMatrix = (bool **)calloc(N, sizeof(int *));
-
-    for (int i = 0; i < N; ++i)
-        MSTMatrix[i] = (bool *)calloc(N, sizeof(int));
-
     for (int i = 1; i < N; i++) {
-        MSTMatrix[parent[i]][i] = true;
+        MSTMatrix[parent[i]][i] = 1;
+        MSTMatrix[i][parent[i]] = 1;
         MSTSize += adjacentMatrix[parent[i]][i];
     }
 
-    cout << "MST Size: " << MSTSize << endl;
+    return MSTSize;
 }
 
 // A utility function to find the vertex with minimum key value, from
@@ -97,7 +110,7 @@ void MST::printMSTMatrix()
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             if (MSTMatrix[i][j])
-                cout << MSTMatrix[i][j] << "," << adjacentMatrix[i][j] << " ";
+                cout << MSTMatrix[i][j] /*<< "," << adjacentMatrix[i][j]*/ << " ";
             else
                 cout << MSTMatrix[i][j] << " ";
         }
@@ -141,22 +154,21 @@ float MST::calStd(int option)
 //add shortcuts if a vertex has no detours.
 //calculate heuristic TSP cost
 
-// pass in current_index, shortcut_flag, coordinates_of_vertex_to_shortcut
-void MST::makeTSPHelper(int currentVertex, int parentVertex)
+void MST::makeTSP2Helper(int currentVertex, int parentVertex)
 {
     bool shortcutFlag = true;
     visited[currentVertex] = true;
     if (shortcutVertex == -1)
-        TSP1p5_Total += adjacentMatrix[parentVertex][currentVertex];
+        TSP2_size += adjacentMatrix[parentVertex][currentVertex];
     else {
-        TSP1p5_Total += adjacentMatrix[shortcutVertex][currentVertex];
+        TSP2_size += adjacentMatrix[shortcutVertex][currentVertex];
         shortcutVertex = -1;
     }
 
     for (int i = 0; i < N; i++) {
-        if (MSTMatrix[currentVertex][i] && !visited[i]) {
+        if (MSTMatrix[currentVertex][i] > 0 && !visited[i]) {
             shortcutFlag = false;
-            makeTSPHelper(i, currentVertex);
+            makeTSP2Helper(i, currentVertex);
         }
     }
 
@@ -164,31 +176,159 @@ void MST::makeTSPHelper(int currentVertex, int parentVertex)
         shortcutVertex = currentVertex;
 }
 
-void MST::makeTSP2()
+float MST::makeTSP2()
 {
-    makeTSPHelper(0, 0);
+    makeTSP2Helper(0, 0);
+    return TSP2_size;
 }
 
-void MST::makeTSP1_5()
+// Uses DFS to count the number of vertices reachable from the passed in vertex
+int MST::countReachable(int currentVertex)
 {
+    visited[currentVertex] = true;
+    int count = 1;
 
-    //construct minimum-weight-matching for the given MST
-    minimumMatching();
-
-    //make all edges has even degree by combining minimum-weight matching and MST
-    combine();
-
-    //calculate heuristic TSP cost
+    for (int i = 0; i < N; i++) {
+        if (MSTMatrix[currentVertex][i] > 0 && !visited[i])
+            count += countReachable(i);
+    }
+    return count;
 }
 
-void MST::minimumMatching()   //if you choose O(n^2)
+void MST::RemoveEdge(int i, int j)
 {
-    //find minimum-weight matching for the MST.
-
-    //you should carefully choose a matching algorithm to optimize the TSP cost.
+    MSTMatrix[i][j]--;
+    MSTMatrix[j][i]--;
 }
 
-void MST::combine()
+void MST::AddEdge(int i, int j)
 {
-    //combine minimum-weight matching with the MST to get a multigraph which has vertices with even degree
+    MSTMatrix[i][j]++;
+    MSTMatrix[j][i]++;
 }
+
+void MST::TSP1_5_Start(int current_vertex)
+{
+    // Maybe add some logic here if shortcut_vertex != -1
+    visited_euler_tour[current_vertex] = true;
+    for (int i = 0; i < N; i++) {
+        if (MSTMatrix[current_vertex][i] > 0 && isValidEdge(current_vertex, i)) {
+            // Edge we are looking at adding to our tour leads to a vertex that
+            // was already visited. Store current_vertex so we can shortcut
+            // the already visited vertex later
+            if (i != current_vertex && visited_euler_tour[i] && shortcut_vertex_euler == -1) {
+                shortcut_vertex_euler = current_vertex;
+                if (debug)
+                    cout << "Next move is shortcut from " << shortcut_vertex_euler << endl;
+                RemoveEdge(i, current_vertex);
+                TSP1_5_Start(i);
+            }
+            // We are looking for a vertex in the tour that has not been visited so that
+            // we can make our shortcut. The vertex examined in this iteration
+            // has already been visited so we do not shortcut to it
+            else if (i != current_vertex && visited_euler_tour[i] && shortcut_vertex_euler != -1) {
+                RemoveEdge(i, current_vertex);
+                TSP1_5_Start(i);
+            }
+            // Found a valid vertex to shortcut to. Execute the shortcut
+            else if (!visited_euler_tour[i] && shortcut_vertex_euler != -1) {
+                if (debug)
+                    cout << "SHORTCUT: " << shortcut_vertex_euler << " - " << i << endl;
+                RemoveEdge(i, current_vertex);
+                TSP1p5_size += adjacentMatrix[shortcut_vertex_euler][i];
+                shortcut_vertex_euler = -1;
+                TSP1_5_Start(i);
+            } else {
+                if (debug)
+                    cout << current_vertex << " " << i << endl;
+                RemoveEdge(i, current_vertex);
+                TSP1p5_size += adjacentMatrix[current_vertex][i];
+                TSP1_5_Start(i);
+            }
+        }
+    }
+}
+
+float MST::makeTSP1_5()
+{
+    if (verbose)
+        cout << "Running TSP1p5 Calculation..." << endl;
+    shortcut_vertex_euler = -1;
+    TSP1_5_Start(0);
+    return TSP1p5_size;
+}
+
+void MST::FindOddVertices()
+{
+    int degree;
+    for (int i = 0; i < N; i++) {
+        degree = 0;
+        for (int j = 0; j < N; j++) {
+            if (MSTMatrix[i][j] > 0)
+                degree++;
+        }
+        if (degree & 1)
+            odd_vertices.insert(i);
+    }
+    MakeOddVertexMatrix(odd_vertices.size());
+}
+
+void MST::MakeOddVertexMatrix(int size)
+{
+    odd_vertex_matrix.resize(size, vector<MappedGraphItem *>(size));
+
+    // Grab the edges formed by all odd vertices in the MST
+    // and form a complete graph out of them
+    int ori = 0; // odd row index
+    int oci = 0; // odd column index
+    if (debug)
+        cout << "Odd Vertices: " << endl;
+    for (auto i : odd_vertices) {
+        if (debug)
+            cout << i << endl;
+        oci = 0;
+        for (auto j : odd_vertices) {
+            odd_vertex_matrix[ori][oci] = new MappedGraphItem(i, j, adjacentMatrix[i][j]);
+            odd_vertex_matrix[oci][ori] = new MappedGraphItem(j, i, adjacentMatrix[j][i]);
+            oci++;
+        }
+        ori++;
+    }
+}
+
+bool MST::isValidEdge(int currentVertex, int testVertex)
+{
+    int count = 0;
+    for (int i = 0; i < N; i++) {
+        if (MSTMatrix[currentVertex][i] > 0)
+            count++;
+    }
+    if (count == 1) {
+        if (debug)
+            cout << "Only 1 vertex reachable from " << currentVertex << endl;
+        return true;
+    }
+
+    fill(visited.begin(), visited.end(), false);
+    int reachable = countReachable(currentVertex);
+    if (debug)
+        cout << "reachable " << currentVertex << " - " << testVertex << ": " << reachable << endl;
+    RemoveEdge(testVertex, currentVertex);
+
+    fill(visited.begin(), visited.end(), false);
+    int reachable_removed = countReachable(currentVertex);
+    if (debug)
+        cout << "reachable_removed " << currentVertex << " - " << testVertex << ": " << reachable_removed << endl;
+    AddEdge(currentVertex, testVertex);
+
+    return (reachable > reachable_removed) ? false : true;
+
+}
+
+int MST::GetNumberOfOddVertices()
+{
+    return odd_vertices.size();
+}
+
+
+

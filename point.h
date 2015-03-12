@@ -18,6 +18,13 @@ public:
     int getPointNum();
     void printPointset();
 
+    // added for EC2
+    void generateProblemFile();
+    int width;
+    int height;
+
+
+
 private:
     float getEuclideanDistance(int x1, int y1, int x2, int y2);
 };
