@@ -1,6 +1,7 @@
 #include "MST.h"
 extern bool debug;
 extern bool verbose;
+extern bool last_vertex;
 
 MST::MST(float **input, int size, int runs)
 {
@@ -9,6 +10,8 @@ MST::MST(float **input, int size, int runs)
     key = new int[size];
     mstSet = new bool[size];
     parent = new int[size];
+    Last_TSP1p5_Vertex = 0;
+    Last_TSP2_Vertex = 0;
     MSTSize = 0;
 
     MSTMatrix = (int **)calloc(size, sizeof(int *));
@@ -156,12 +159,17 @@ void MST::makeTSP2Helper(int currentVertex, int parentVertex)
 {
     bool shortcutFlag = true;
     visited[currentVertex] = true;
-    if (shortcutVertex == -1)
+    if (shortcutVertex == -1) {
         TSP2_size += adjacentMatrix[parentVertex][currentVertex];
-    else {
+        if (last_vertex)
+            cout << parentVertex << " " << currentVertex << endl;
+    } else {
         TSP2_size += adjacentMatrix[shortcutVertex][currentVertex];
+        if (last_vertex)
+            cout << shortcutVertex << " " << currentVertex << endl;
         shortcutVertex = -1;
     }
+    Last_TSP2_Vertex = currentVertex;
 
     for (int i = 0; i < N; i++) {
         if (MSTMatrix[currentVertex][i] > 0 && !visited[i]) {
@@ -170,13 +178,20 @@ void MST::makeTSP2Helper(int currentVertex, int parentVertex)
         }
     }
 
-    if (shortcutFlag)
+    if (shortcutFlag) {
         shortcutVertex = currentVertex;
+        Last_TSP2_Vertex = shortcutVertex;
+    }
 }
 
 float MST::makeTSP2()
 {
     makeTSP2Helper(0, 0);
+    if (verbose) {
+        cout << Last_TSP2_Vertex << " 0" << endl;
+        cout << "TSP2 done " << endl;
+    }
+    TSP2_size += adjacentMatrix[0][Last_TSP2_Vertex];
     return TSP2_size;
 }
 
@@ -216,6 +231,7 @@ void MST::TSP1_5_Start(int current_vertex)
             // the already visited vertex later
             if (i != current_vertex && visited_euler_tour[i] && shortcut_vertex_euler == -1) {
                 shortcut_vertex_euler = current_vertex;
+                Last_TSP1p5_Vertex = shortcut_vertex_euler;
                 if (debug)
                     cout << "Next move is shortcut from " << shortcut_vertex_euler << endl;
                 RemoveEdge(i, current_vertex);
@@ -234,12 +250,14 @@ void MST::TSP1_5_Start(int current_vertex)
                     cout << "SHORTCUT: " << shortcut_vertex_euler << " - " << i << endl;
                 RemoveEdge(i, current_vertex);
                 TSP1p5_size += adjacentMatrix[shortcut_vertex_euler][i];
+                Last_TSP1p5_Vertex = i;
                 shortcut_vertex_euler = -1;
                 TSP1_5_Start(i);
             } else {
                 if (debug)
                     cout << current_vertex << " " << i << endl;
                 RemoveEdge(i, current_vertex);
+                Last_TSP1p5_Vertex = i;
                 TSP1p5_size += adjacentMatrix[current_vertex][i];
                 TSP1_5_Start(i);
             }
@@ -253,6 +271,9 @@ float MST::makeTSP1_5()
         cout << "Running TSP1p5 Calculation..." << endl;
     shortcut_vertex_euler = -1;
     TSP1_5_Start(0);
+    TSP1p5_size += adjacentMatrix[Last_TSP1p5_Vertex][0];
+    if (verbose)
+        cout << Last_TSP1p5_Vertex << " 0" << endl;
     return TSP1p5_size;
 }
 

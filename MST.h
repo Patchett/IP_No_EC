@@ -25,12 +25,14 @@ public:
     vector<bool> visited;
     float TSP2_size;
     int shortcutVertex;
+    int Last_TSP2_Vertex;
     float makeTSP2();
     void printMSTMatrix();
 
     //deliverable c
     vector<bool> visited_euler_tour; // keeps track of visited vertices in the Euler tour
     float TSP1p5_size;
+    int Last_TSP1p5_Vertex;
     // Allows us to map vertices from the perfect matching to vertices in the
     // original Adjacency Matrix
     vector<vector<MappedGraphItem *>> odd_vertex_matrix;

@@ -82,7 +82,6 @@ void Point::generatePoint(unsigned int H, unsigned int W, unsigned int N)
     Problem_File << "EDGE_WEIGHT_TYPE : EUC_2D" << endl;
     Problem_File << "NODE_COORD_SECTION" << endl;
 
-
     //uniform distribution generation
     std::default_random_engine x_generator;
     std::default_random_engine y_generator;

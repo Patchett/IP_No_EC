@@ -10,6 +10,8 @@
 #include <chrono>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
+#include <numeric>
 
 using namespace std;
 
