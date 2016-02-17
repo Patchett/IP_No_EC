@@ -35,7 +35,7 @@ public:
     int Last_TSP1p5_Vertex;
     // Allows us to map vertices from the perfect matching to vertices in the
     // original Adjacency Matrix
-    vector<vector<MappedGraphItem *>> odd_vertex_matrix;
+    vector<vector<MappedGraphItem>> odd_vertex_matrix;
     // Set of odd vertices from the MST
     set<int> odd_vertices;
     // Keeps track of which vertex to shortcut in the Euler Tour during TSP1p5 calculation

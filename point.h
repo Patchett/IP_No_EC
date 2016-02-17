@@ -8,7 +8,7 @@ public:
     int pointNum; //the number of generated pointset
     set<pair<int, int>> pointset;
 
-    Point();
+    Point(int N);
     ~Point();
 
     void generatePoint(unsigned int H, unsigned int W, unsigned int N);

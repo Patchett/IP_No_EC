@@ -42,10 +42,10 @@ void LoadInput(int &node_num, int &edge_num, int *&edges, int *&weights, MST *ms
     for (int i = 0; i < N ; ++i) {
         for (int j = i + 1 ; j < N ; ++j) {
             if (debug)
-                cout << i << " " << j << " = " << mst->odd_vertex_matrix[i][j]->adj_row_index << " " << mst->odd_vertex_matrix[i][j]->adj_col_index << endl;
+                cout << i << " " << j << " = " << mst->odd_vertex_matrix[i][j].adj_row_index << " " << mst->odd_vertex_matrix[i][j].adj_col_index << endl;
             edges[2 * e] = i;
             edges[2 * e + 1] = j;
-            weights[e] = mst->odd_vertex_matrix[i][j]->weight;
+            weights[e] = mst->odd_vertex_matrix[i][j].weight;
             e++;
         }
     }
@@ -73,7 +73,7 @@ void CombineMST_Matching(int node_num, PerfectMatching *pm, MST *&mst)
     // i = rows, j = cols
     for (i = 0; i < node_num; i++) {
         j = pm->GetMatch(i);
-        mst->MSTMatrix[(mst->odd_vertex_matrix[i][j]->adj_row_index)][(mst->odd_vertex_matrix[i][j]->adj_col_index)]++;
+        mst->MSTMatrix[(mst->odd_vertex_matrix[i][j].adj_row_index)][(mst->odd_vertex_matrix[i][j].adj_col_index)]++;
         if (debug)
             cout << i << " " << j << endl;
     }
@@ -89,7 +89,7 @@ void RunSolution(int W, int H, int N, int runs, int i,
 
     set<pair<int, int>> generatedPointset;
     float **adjacentMatrix;
-    Point *pointset = new Point();
+    Point *pointset = new Point(N);
 
     pointset->generatePoint(W, H, N); //max(W,H,N) should be < 20000 because of memory limitation
     //pointset.printPointset();
@@ -171,6 +171,7 @@ void RunSolution(int W, int H, int N, int runs, int i,
 
     cout << "Run " << i << " complete " << endl;
     //PrintMatching(node_num, pm);
+    return;
 }
 
 void Calculate_Cost_Stats(vector<int> &MST_Costs,
@@ -274,7 +275,7 @@ void Print_Individual_Stats(const vector<int> MST_Costs,
 {
 
     cout << "Run          MST_Cost    TSP2_Cost   TSP1p5_Costs MST_Time    TSP2_Time   TSP1p5_Time" << endl;
-    for (int i = 0; i < MST_Costs.size(); i++)
+    for (unsigned int i = 0; i < MST_Costs.size(); i++)
         cout << setw(13) << left << i + 1 << setw(13) << left << MST_Costs[i] << setw(13) << left  << TSP2_Costs[i] << setw(13) << left  << TSP1p5_Costs[i] << setw(13) << left  << MST_Times[i] << setw(13) << left  << TSP2_Times[i] << setw(13) << left  << TSP1p5_Times[i] << endl;
 }
 
@@ -376,13 +377,14 @@ int main()
 //     Parameter_File_KOPT << "PROBLEM_FILE = Problem_File" << endl;
 //     Parameter_File_KOPT << "MOVE_TYPE = 5" << endl;
 //     Parameter_File_KOPT << "MAX_SWAPS = " << N / 2 << endl;
-//     Parameter_File_KOPT << "MAX_TRIALS = " << N  << endl;
+//     Parameter_File_KOPT << "MAX_TRIALS = " << N / 2  << endl;
 // //     Parameter_File_KOPT << "PATCHING_C = 2 " << endl;
 // //     Parameter_File_KOPT << "PATCHING_A = 2 " << endl;
-//     Parameter_File_KOPT << "ASCENT_CANDIDATES = " << 5 << endl;
-//     Parameter_File_KOPT << "EXTRA_CANDIDATES = " << 2 << endl;
-//     //Parameter_File_KOPT << "POPULATION_SIZE " << 100 << endl;
+//     Parameter_File_KOPT << "ASCENT_CANDIDATES = 2" << endl;
+//     Parameter_File_KOPT << "EXTRA_CANDIDATES = 1" << endl;
+//     Parameter_File_KOPT << "POPULATION_SIZE = 1" << endl;
 //     Parameter_File_KOPT << "RUNS = 1" << endl;
+//     Parameter_File_KOPT << "TRACE_LEVEL = 0" << endl;
 //     Parameter_File_KOPT.close();
 //
 //     double totalTime = 0;

@@ -1,0 +1,13 @@
+QUICKSTART:
+At the command line with a GCC compiler, do the following
+
+make clean all
+./TSP
+
+USAGE:
+1. Upon running our project, a command window should pop up which prompts the
+user for the # of runs, W, H, and N.
+2. Enter desired parameters for W, H, N, and # of runs
+3. Be patient, for large inputs, TSP1p5 can take between 300-400 seconds
+4. As a bonus, averages, means, and standard deviations of runtimes for MST, TSP2,
+and TSP1p5 will be printed after all trials have been completed.

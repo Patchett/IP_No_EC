@@ -12,6 +12,7 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#include <memory>
 
 using namespace std;
 

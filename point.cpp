@@ -1,9 +1,12 @@
 #include "point.h"
 extern bool debug;
 
-Point::Point()
+Point::Point(int N)
 {
-    pointNum = 0;
+    adjacentMatrix = (float **)malloc(N * sizeof(int *));
+    for (int i = 0; i < N ; ++i)
+        adjacentMatrix[i] = (float *)malloc(N * sizeof(int));
+    pointNum = N;
 }
 
 Point::~Point()
@@ -102,10 +105,6 @@ void Point::generatePoint(unsigned int H, unsigned int W, unsigned int N)
         pointset.insert(point);
         count++;
     }
-
-    adjacentMatrix = (float **)malloc(N * sizeof(int *));
-    for (unsigned int i = 0; i < N ; ++i)
-        adjacentMatrix[i] = (float *)malloc(N * sizeof(int));
 
     for (set<pair<int, int>>::iterator it = pointset.begin() ; it != pointset.end() ; ++it, ++row) {
         int x1 = (*it).first;

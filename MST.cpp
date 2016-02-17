@@ -1,4 +1,5 @@
 #include "MST.h"
+
 extern bool debug;
 extern bool verbose;
 extern bool last_vertex;
@@ -39,6 +40,16 @@ MST::~MST()
     for (int i = 0; i < N; i++)
         free(MSTMatrix[i]);
     free(MSTMatrix);
+    visited.clear();
+    visited_euler_tour.clear();
+
+//     for (int i = 0; i < odd_vertex_matrix.size(); i++)
+//         for (int j = 0; j < odd_vertex_matrix.size(); j++)
+//             delete odd_vertex_matrix[i][j];
+
+//     for each(vector<MappedGraphItem *> vec in odd_vertex_matrix)
+//         for each(MappedGraphItem * oPtr in vec)
+//             delete oPtr;
 }
 
 //use Prim's algorithm or Kruskal algorithm. Copied from 'http://www.geeksforgeeks.org/greedy-algorithms-set-5-prims-minimum-spanning-tree-mst-2/'
@@ -294,7 +305,7 @@ void MST::FindOddVertices()
 
 void MST::MakeOddVertexMatrix(int size)
 {
-    odd_vertex_matrix.resize(size, vector<MappedGraphItem *>(size));
+    odd_vertex_matrix.resize(size, vector<MappedGraphItem>(size));
 
     // Grab the edges formed by all odd vertices in the MST
     // and form a complete graph out of them
@@ -307,8 +318,8 @@ void MST::MakeOddVertexMatrix(int size)
             cout << i << endl;
         oci = 0;
         for (auto j : odd_vertices) {
-            odd_vertex_matrix[ori][oci] = new MappedGraphItem(i, j, adjacentMatrix[i][j]);
-            odd_vertex_matrix[oci][ori] = new MappedGraphItem(j, i, adjacentMatrix[j][i]);
+            odd_vertex_matrix[ori][oci] = MappedGraphItem(i, j, adjacentMatrix[i][j]);
+            odd_vertex_matrix[oci][ori] = MappedGraphItem(j, i, adjacentMatrix[j][i]);
             oci++;
         }
         ori++;

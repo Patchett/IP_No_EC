@@ -8,7 +8,13 @@ public:
         adj_col_index(aci),
         weight(w) {}
 
+    MappedGraphItem() :
+        adj_row_index(0),
+        adj_col_index(0),
+        weight(0) {}
+
+    ~MappedGraphItem() {}
     int adj_row_index;
     int adj_col_index;
-    int weight;
+    float weight;
 };
